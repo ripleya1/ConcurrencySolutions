@@ -7,14 +7,34 @@
 #include "common_threads.h"
 #include "zemaphore.h" 
 
-Zem_t Fork[5];
+int numPhilosophers = 0;
+Zem_t *Fork; // TODO: not sure how not allowed this is
+
+int main(int argc, char *argv[]) {
+    if(argc != 2){
+        printf("Usage: DiningPhilosophers [philosophers]\n");        exit(1);
+    }
+    numPhilosophers = atoi(argv[1]);
+    if(numPhilosophers < 3 || numPhilosophers > 20){
+        printf("There must be between 3 and 20 philosophers\n");
+    }
+    
+    // init forks
+    Zem_t Fork[numPhilosophers];
+    for(int i = 0; i < numPhilosophers; i++){
+        Zem_init(&Fork[i], 1);
+    }
+
+    // init philosophers
+
+}
 
 int left(int p){
     return p;
 }
 
 int right(int p){
-    return (p + 1) % 5;
+    return (p + 1) % numPhilosophers;
 }
 
 void think(){
@@ -27,7 +47,7 @@ void eat(){
     return;
 }
 
-void Philosopher(int p, int loops){
+void philosopher(int p, int loops){
     for(int i = 0; i < loops; i++){
         think();
         getForks(p);
@@ -49,12 +69,4 @@ void getForks(int p){
 void putForks(int p){
     Zem_post(&Fork[left(p)]);
     Zem_post(&Fork[right(p)]);
-}
-
-int main(int argc, char *argv[]) {
-    printf("Usage: DiningPhilosophers [philosophers] [forks]\n");
-    // init forks
-    for(int i = 0; i < 5; i++){
-        Zem_init(&Fork[i], 1);
-    }
 }
