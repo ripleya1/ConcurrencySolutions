@@ -3,7 +3,7 @@
 ## Part 1:  The Dining Philosophers
 You will write a program which solves the dining philosophers problem using various algorithms.  You are to implement the algorithms, and then analyze them to determine which ones work best, which ones deadlock, which ones cause starvation, etc.
 
-In order to get synchronization, we will use semaphores via the zemaphore implementation of the text.  
+In order to get synchronization, we will use semaphores via the [zemaphore implementation of the text](zemaphore.h).  
 
 [`littleOldWoman.c`](littleOldWoman.c) is an example using the semaphore library.
 
@@ -20,14 +20,14 @@ Each philosopher has their own seat at the table, but they do all of their think
 ### Implementation Hints
 Your program should accept the number N of philosophers and forks as a command line argument.  N can be any value between 3 and 20.  For these algorithms you must keep track of which forks each philosopher wants to pick up.  One way to do this (as we did in class) is to number the philosophers and forks from 0 through N-1.  Philosopher p will want to pick up fork p (to the left) and fork (p+1) % N (to the right).  Each philosopher should be a thread which then runs a procedure called philosopher
 
-You will have to send some arguments to the procedure. See the littleOldWoman example and also the threads-api example from the text.
+You will have to send some arguments to the procedure. See the [littleOldWoman example](littleOldWoman.c) and also the [threads-api example from the text](misc/threads-api).
 
 Each fork should be a semaphore.  Some of the algorithms require additional semaphores.
 
 ### Algorithm Analysis
 You should run some experiments to analyze the behavior and performance of the different algorithms.  If an algorithm is susceptible to deadlock, try to find suitable parameters (thinking time, eating time, etc.) to demonstrate deadlock.  
 
-You should think about how you might detect starvation, for example by using the pstat structure from project 2, but looking for threads that have been sleeping for a long time (where you get to define what long time means).
+You should think about how you might detect starvation, for example by using [the pstat structure from project 2](https://github.com/ripleya1/xv6-riscv/blob/lottery/kernel/pstat.h), but looking for threads that have been sleeping for a long time (where you get to define what long time means).
 
 Also vary the number of philosophers because sometimes an algorithm may behave differently for an even or odd number of philosophers.
 
@@ -43,7 +43,8 @@ Here's how the shuttle service worked:
 - The shuttles held 30 people, so if there were more people waiting, they would also have to hang out for the next shuttle. (Unnecessary aside: Pokemon Go stops were scattered about, so it wasn't completely useless.)
 When the allowed attendees were onboard, the shuttle headed off.
 - Because they have better things to do than wait for us, if a shuttle arrived and no attendees were waiting, the shuttle immediately departed.
-- Your solution should enforce the constraints above.
+
+Your solution should enforce the constraints above.
 
 ### Implementation Hints
 Think about the state you want to keep and the places where you need a semaphore:
