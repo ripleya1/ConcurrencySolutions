@@ -5,7 +5,7 @@ You will write a program which solves the dining philosophers problem using vari
 
 In order to get synchronization, we will use semaphores via the zemaphore implementation of the text.  
 
-`littleOldWoman.c` is an example using the semaphore library.
+[`littleOldWoman.c`](littleOldWoman.c) is an example using the semaphore library.
 
 ### Algorithms
 #### Algorithm #1:
