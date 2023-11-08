@@ -1,6 +1,6 @@
 # Dining philosophers
-## Variables:
-### Semaphores
+### Variables
+#### Semaphores
 ```
 Fork [5];
 Fork[0] = Fork[1] = Fork[2] = Fork[3] = Fork[4] = 0;
