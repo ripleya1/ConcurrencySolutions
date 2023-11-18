@@ -7,16 +7,22 @@
 #include "common_threads.h"
 #include "zemaphore.h" 
 
-int numPhilosophers = 0;
+int numPhilosophers = 0; // TODO: not sure how allowed this is
 Zem_t *Fork; // TODO: not sure how not allowed this is
+typedef struct {
+    int p;
+    int numLoops;
+} threadArgs;
 
 int main(int argc, char *argv[]) {
     if(argc != 2){
-        printf("Usage: DiningPhilosophers [philosophers]\n");        exit(1);
+        printf("Usage: DiningPhilosophers [philosophers]\n");
+        exit(1);
     }
     numPhilosophers = atoi(argv[1]);
     if(numPhilosophers < 3 || numPhilosophers > 20){
         printf("There must be between 3 and 20 philosophers\n");
+        exit(1);
     }
     
     // init forks
@@ -25,8 +31,23 @@ int main(int argc, char *argv[]) {
         Zem_init(&Fork[i], 1);
     }
 
-    // init philosophers
+    printf("Dining started\n");
 
+    // init philosophers
+    pthread_t ph[numPhilosophers];
+    threadArgs arg[numPhilosophers];
+    for(int i = 0; i < numPhilosophers; i++){
+        arg[i].p = i;
+        arg[i].numLoops = 5;
+        Pthread_create(&ph[i], NULL, philosopher(), &arg[i]);
+    }
+
+    // join philosphers
+    for(int i = 0; i < numPhilosophers; i++){
+        Pthread_join(ph[i], NULL);
+    }
+
+    printf("Dining finished\n");
 }
 
 int left(int p){
@@ -47,20 +68,23 @@ void eat(){
     return;
 }
 
-void philosopher(int p, int loops){
-    for(int i = 0; i < loops; i++){
+void philosopher(void *arg){
+    threadArgs *args = (threadArgs *) arg;
+    for(int i = 0; i < args -> numLoops; i++){
         think();
-        getForks(p);
+        getForks(args -> p);
         eat();
-        putForks(p);
+        putForks(args -> p);
     }
+    return NULL;
 }
 
 void getForks(int p){
-    if(p == 0){
+    if(p == 0){ // TODO: p == 4?
         Zem_wait(&Fork[left(p)]);
         Zem_wait(&Fork[right(p)]);
     }
+    // TODO: else?
     Zem_wait(&Fork[left(p)]);
     // interleaving here
     Zem_wait(&Fork[left(p)]);
