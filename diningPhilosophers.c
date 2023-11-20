@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
         printf("Usage: DiningPhilosophers [philosophers]\n");
         exit(1);
     }
-    numPhilosophers = atoi(argv[1]);
+    numPhilosophers = atoi(argv[1]); // set numPhilosophers
     if(numPhilosophers < 3 || numPhilosophers > 20){
         printf("There must be between 3 and 20 philosophers\n");
         exit(1);
@@ -27,20 +27,23 @@ int main(int argc, char *argv[]) {
     for(int i = 0; i < numPhilosophers; i++){
         Zem_init(&Fork[i], 1);
     }
+    printf("numPhilosophers: %d\n", numPhilosophers);
 
     printf("Dining started\n");
 
     // init philosophers
     pthread_t ph[numPhilosophers];
     threadArgs arg[numPhilosophers];
-    for(int i = 0; i < numPhilosophers; i++){
+    int i;
+    for(i = 0; i < numPhilosophers; i++){
         arg[i].p = i;
-        arg[i].numLoops = 5;
+        arg[i].numLoops = 1;
         Pthread_create(&ph[i], NULL, philosopher, &arg[i]);
     }
+    printf("Philosophers inited\n");
 
-    // join philosphers
-    for(int i = 0; i < numPhilosophers; i++){
+    // run philosphers
+    for(i = 0; i < numPhilosophers; i++){
         Pthread_join(ph[i], NULL);
     }
 
@@ -48,26 +51,31 @@ int main(int argc, char *argv[]) {
 }
 
 int left(int p){
+    printf("l: %d\n", p);
     return p;
 }
 
 int right(int p){
+    printf("r: %d\n", p);
     return (p + 1) % numPhilosophers;
 }
 
 void think(){
-    sleep(1);
+    printf("t\n");
+    // sleep(1);
     return;
 }
 
 void eat(){
-    sleep(1);
+    printf("e\n");
+    // sleep(1);
     return;
 }
 
-void philosopher(void *arg){
+void *philosopher(void *arg){
     threadArgs *args = (threadArgs *) arg;
-    for(int i = 0; i < args -> numLoops; i++){
+    int i;
+    for(i = 0; i < args -> numLoops; i++){
         think();
         getForks(args -> p);
         eat();
@@ -77,7 +85,8 @@ void philosopher(void *arg){
 }
 
 void getForks(int p){
-    if(p == 0){ // TODO: p == 4?
+    printf("g: %d\n", p);
+    if(p == numPhilosophers - 1){ // TODO: p == numPhilosophers - 1?
         Zem_wait(&Fork[left(p)]);
         Zem_wait(&Fork[right(p)]);
     }
@@ -88,6 +97,7 @@ void getForks(int p){
 }
 
 void putForks(int p){
+    printf("p: %d\n", p);
     Zem_post(&Fork[left(p)]);
     Zem_post(&Fork[right(p)]);
 }
