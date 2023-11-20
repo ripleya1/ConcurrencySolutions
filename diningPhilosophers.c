@@ -3,16 +3,13 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#include "diningPhilosophers.h"
 #include "common.h"
 #include "common_threads.h"
 #include "zemaphore.h" 
 
 int numPhilosophers = 0; // TODO: not sure how allowed this is
 Zem_t *Fork; // TODO: not sure how not allowed this is
-typedef struct {
-    int p;
-    int numLoops;
-} threadArgs;
 
 int main(int argc, char *argv[]) {
     if(argc != 2){
@@ -39,7 +36,7 @@ int main(int argc, char *argv[]) {
     for(int i = 0; i < numPhilosophers; i++){
         arg[i].p = i;
         arg[i].numLoops = 5;
-        Pthread_create(&ph[i], NULL, philosopher(), &arg[i]);
+        Pthread_create(&ph[i], NULL, philosopher, &arg[i]);
     }
 
     // join philosphers
