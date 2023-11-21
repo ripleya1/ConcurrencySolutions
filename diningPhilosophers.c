@@ -22,12 +22,13 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     
+    printf("numPhilosophers: %d\n", numPhilosophers);
     // init forks
     Zem_t Fork[numPhilosophers];
     for(int i = 0; i < numPhilosophers; i++){
         Zem_init(&Fork[i], 1);
+        // printf("%p\n", &Fork[i]);
     }
-    printf("numPhilosophers: %d\n", numPhilosophers);
 
     printf("Dining started\n");
 
@@ -62,14 +63,14 @@ int right(int p){
 
 void think(){
     printf("t\n");
-    // sleep(1);
-    return;
+    sleep(1);
+    // return;
 }
 
 void eat(){
     printf("e\n");
-    // sleep(1);
-    return;
+    sleep(1);
+    // return;
 }
 
 void *philosopher(void *arg){
@@ -86,14 +87,14 @@ void *philosopher(void *arg){
 
 void getForks(int p){
     printf("g: %d\n", p);
-    if(p == numPhilosophers - 1){ // TODO: p == numPhilosophers - 1?
-        Zem_wait(&Fork[left(p)]);
-        Zem_wait(&Fork[right(p)]);
-    }
+    // if(p == numPhilosophers - 1){ // TODO: p == numPhilosophers - 1?
+    //     Zem_wait(&Fork[left(p)]);
+    //     Zem_wait(&Fork[right(p)]);
+    // }
     // TODO: else?
     Zem_wait(&Fork[left(p)]);
     // interleaving here
-    Zem_wait(&Fork[left(p)]);
+    Zem_wait(&Fork[right(p)]);
 }
 
 void putForks(int p){
