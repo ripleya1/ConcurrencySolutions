@@ -34,20 +34,12 @@ int main(int argc, char *argv[]) {
 
     // init philosophers
     pthread_t ph[numPhilosophers];
-    threadArgs arg[numPhilosophers];
     int i;
     for(i = 0; i < numPhilosophers; i++){
-        arg[i].p = i;
-        arg[i].numLoops = 1;
-        Pthread_create(&ph[i], NULL, philosopher, &arg[i]);
+        int p = i;
+        Pthread_create(&ph[i], NULL, philosopher, (void *)p);
     }
     printf("Philosophers inited\n");
-
-    // run philosphers
-    for(i = 0; i < numPhilosophers; i++){
-        Pthread_join(ph[i], NULL);
-    }
-
     printf("Dining finished\n");
 }
 
@@ -64,23 +56,22 @@ int right(int p){
 void think(){
     printf("t\n");
     sleep(1);
-    // return;
+    return;
 }
 
 void eat(){
     printf("e\n");
     sleep(1);
-    // return;
+    return;
 }
 
 void *philosopher(void *arg){
-    threadArgs *args = (threadArgs *) arg;
-    int i;
-    for(i = 0; i < args -> numLoops; i++){
+    int p = (int) arg;
+    for(int i = 0;; i++){ // infinite loop
         think();
-        getForks(args -> p);
+        getForks(p);
         eat();
-        putForks(args -> p);
+        putForks(p);
     }
     return NULL;
 }
