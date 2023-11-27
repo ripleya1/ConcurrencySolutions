@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     
-    printf("numPhilosophers: %d\n", numPhilosophers);
+    // printf("numPhilosophers: %d\n", numPhilosophers);
     // init forks
     Zem_t Fork[numPhilosophers];
     for(int i = 0; i < numPhilosophers; i++){
@@ -39,28 +39,28 @@ int main(int argc, char *argv[]) {
         int p = i;
         Pthread_create(&ph[i], NULL, philosopher, (void *)p);
     }
-    printf("Philosophers inited\n");
+    // printf("Philosophers inited\n");
     printf("Dining finished\n");
 }
 
 int left(int p){
-    printf("l: %d\n", p);
+    // printf("l: %d\n", p);
     return p;
 }
 
 int right(int p){
-    printf("r: %d\n", p);
+    // printf("r: %d\n", p);
     return (p + 1) % numPhilosophers;
 }
 
 void think(){
-    printf("t\n");
+    // printf("t\n");
     sleep(1);
     return;
 }
 
 void eat(){
-    printf("e\n");
+    // printf("e\n");
     sleep(1);
     return;
 }
@@ -89,7 +89,7 @@ void getForks(int p){
 }
 
 void putForks(int p){
-    printf("p: %d\n", p);
+    // printf("p: %d\n", p);
     Zem_post(&Fork[left(p)]);
     Zem_post(&Fork[right(p)]);
 }
