@@ -1,7 +1,7 @@
 CC = gcc
 
-all: diningPhilosophers.o
-	$(CC) diningPhilosophers.o -o dp.exe
+all: diningPhilosophersAlgo1.o
+	$(CC) diningPhilosophersAlgo1.o -o dp1.exe
 
 clean:
 	rm *.o *.exe
