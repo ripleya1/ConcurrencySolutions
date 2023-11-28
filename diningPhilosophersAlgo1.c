@@ -3,13 +3,13 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "diningPhilosophers.h"
+#include "diningPhilosophersAlgo1.h"
 #include "common.h"
 #include "common_threads.h"
 #include "zemaphore.h" 
 
-int numPhilosophers = 0; // TODO: not sure how allowed this is
-Zem_t *Fork; // TODO: not sure how not allowed this is
+int numPhilosophers = 0;
+Zem_t *Fork;
 
 int main(int argc, char *argv[]) {
     if(argc != 2){
@@ -22,12 +22,10 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     
-    // printf("numPhilosophers: %d\n", numPhilosophers);
     // init forks
-    Zem_t Fork[numPhilosophers];
+    Fork = malloc(sizeof(Zem_t) * numPhilosophers);
     for(int i = 0; i < numPhilosophers; i++){
         Zem_init(&Fork[i], 1);
-        // printf("%p\n", &Fork[i]);
     }
 
     printf("Dining started\n");
@@ -39,7 +37,9 @@ int main(int argc, char *argv[]) {
         int p = i;
         Pthread_create(&ph[i], NULL, philosopher, (void *)p);
     }
-    // printf("Philosophers inited\n");
+
+    for(;;);
+
     printf("Dining finished\n");
 }
 
@@ -55,21 +55,27 @@ int right(int p){
 
 void think(){
     // printf("t\n");
-    sleep(1);
+    usleep(10);
     return;
 }
 
 void eat(){
     // printf("e\n");
-    sleep(1);
+    usleep(10);
     return;
 }
 
 void *philosopher(void *arg){
     int p = (int) arg;
-    for(int i = 0;; i++){ // infinite loop
+    for(;;){
+        printf("think %d\n", p);
         think();
+        // algo 2
+        // if(!&Fork[left(p)].value == 1 && !&Fork[right(p)].value == 1)
+        // wait?
+        // effectively do that with a mutex
         getForks(p);
+        printf("eat %d\n", p);
         eat();
         putForks(p);
     }
@@ -77,19 +83,20 @@ void *philosopher(void *arg){
 }
 
 void getForks(int p){
-    printf("g: %d\n", p);
-    // if(p == numPhilosophers - 1){ // TODO: p == numPhilosophers - 1?
-    //     Zem_wait(&Fork[left(p)]);
+    printf("get %d\n", p);
+    // if(p == numPhilosophers - 1){
     //     Zem_wait(&Fork[right(p)]);
+    //     Zem_wait(&Fork[left(p)]);
     // }
-    // TODO: else?
-    Zem_wait(&Fork[left(p)]);
-    // interleaving here
-    Zem_wait(&Fork[right(p)]);
+    // else{
+        Zem_wait(&Fork[left(p)]);
+        // interleaving here
+        Zem_wait(&Fork[right(p)]);
+    // }
 }
 
 void putForks(int p){
-    // printf("p: %d\n", p);
+    printf("put %d\n", p);
     Zem_post(&Fork[left(p)]);
     Zem_post(&Fork[right(p)]);
 }
