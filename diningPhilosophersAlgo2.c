@@ -11,6 +11,7 @@
 int numPhilosophers = 0;
 Zem_t *Fork;
 Zem_t *Phil;
+Zem_t *LookAtForks;
 
 int main(int argc, char *argv[]) {
     if(argc != 2){
@@ -29,14 +30,18 @@ int main(int argc, char *argv[]) {
         Zem_init(&Fork[i], 1);
     }
 
+    // semaphore indicating whether we can safely look at the values in the fork semaphore
+    LookAtForks = malloc(sizeof(Zem_t));
+    Zem_init(&LookAtForks, 1);
+
     printf("Dining started\n");
 
     // init philosophers
     pthread_t ph[numPhilosophers];
-    Phil = malloc(sizeof(Zem_t) * numPhilosophers);
+    Phil = malloc(sizeof(Zem_t) * numPhilosophers); // semaphore indicating whether philosopher[p] should eat
     int i;
     for(i = 0; i < numPhilosophers; i++){
-        Zem_init(&Phil[i], 1); // should i eat
+        Zem_init(&Phil[i], 1);
         int p = i;
         Pthread_create(&ph[i], NULL, philosopher, (void *)p);
     }
@@ -72,12 +77,12 @@ void *philosopher(void *arg){
     int p = (int) arg;
     for(;;){
         printf("think %d\n", p);
+        // below mutexes not necessarily here but somewhere
         // mutex(Fork[left])
         // mutex(fork[right])
-        // NEED A CAN I LOOK AT FORKS SEMAPHORE
-        // IF CAN LOOK AT FORKS SET FORKSAVAILABLE  
-        int forksAvailable = &Fork[left(p)].value != 1 || &Fork[right(p)].value != 1;
-        // post can i look at forks
+        // Zem_wait(&LookAtForks);
+        // int forksAvailable = &Fork[left(p)].value != 1 || &Fork[right(p)].value != 1;
+        // Zem_post(&LookAtForks);
         think();
         getForks(p);
         printf("eat %d\n", p);
@@ -91,10 +96,17 @@ void *philosopher(void *arg){
 
 void getForks(int p){
     printf("get %d\n", p);
-    forksAvailable = 0;
+    int forksAvailable = FALSE;
 
-    // while(if condition)
     while(!forksAvailable){
+        Zem_wait(&LookAtForks);
+        forksAvailable = &Fork[left(p)].value != 1 || &Fork[right(p)].value != 1;
+        // Zem_post(&LookAtForks);
+        if(forksAvailable){
+            Zem_wait(&Fork[left(p)]);
+            Zem_wait(&Fork[right(p)]);
+        }
+        Zem_post(&LookAtForks);
         // wait mutex
         // look at forks
         // if forksAvailable
@@ -107,9 +119,9 @@ void getForks(int p){
     //     Zem_wait(&Fork[left(p)]);
     // }
     // else{
-        Zem_wait(&Fork[left(p)]);
-        // interleaving here
-        Zem_wait(&Fork[right(p)]);
+        // Zem_wait(&Fork[left(p)]);
+        // // interleaving here
+        // Zem_wait(&Fork[right(p)]);
     // }
 }
 
