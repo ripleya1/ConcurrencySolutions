@@ -3,14 +3,13 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "diningPhilosophersAlgo2.h"
+#include "diningPhilosophersAlgo1.h"
 #include "common.h"
 #include "common_threads.h"
 #include "zemaphore.h" 
 
 int numPhilosophers = 0;
 Zem_t *Fork;
-Zem_t *LookAtForks;
 
 int main(int argc, char *argv[]) {
     if(argc != 2){
@@ -28,10 +27,6 @@ int main(int argc, char *argv[]) {
     for(int i = 0; i < numPhilosophers; i++){
         Zem_init(&Fork[i], 1);
     }
-
-    // semaphore indicating whether we can safely look at the values in the fork semaphore
-    LookAtForks = malloc(sizeof(Zem_t));
-    Zem_init(&LookAtForks, 1);
 
     printf("Dining started\n");
 
@@ -85,18 +80,15 @@ void *philosopher(void *arg){
 
 void getForks(int p){
     printf("get %d\n", p);
-    int forksAvailable = FALSE;
-
-    // if either fork is being used/looked at, keep checking if they aren't until they're not
-    while(!forksAvailable){
-        Zem_wait(&LookAtForks);
-        forksAvailable = &Fork[left(p)].value != 1 || &Fork[right(p)].value != 1;
-        if(forksAvailable){ // once they're available, get the forks
-            Zem_wait(&Fork[left(p)]);
-            Zem_wait(&Fork[right(p)]);
-        }
-        Zem_post(&LookAtForks);
-    }
+    // if(p == numPhilosophers - 1){
+    //     Zem_wait(&Fork[right(p)]);
+    //     Zem_wait(&Fork[left(p)]);
+    // }
+    // else{
+        Zem_wait(&Fork[left(p)]);
+        // interleaving here
+        Zem_wait(&Fork[right(p)]);
+    // }
 }
 
 void putForks(int p){
