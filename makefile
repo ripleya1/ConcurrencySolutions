@@ -1,11 +1,18 @@
 CC = gcc
 
-all: diningPhilosophersAlgo1.o diningPhilosophersAlgo2.o
-	$(CC) diningPhilosophersAlgo1.o -o dp1.exe
-	$(CC) diningPhilosophersAlgo2.o -o dp2.exe
+all: dp1 dp2 dp3
+
+dp1: diningPhilosophersAlgo1.o
+	$(CC) $^ -o $@.exe
+
+dp2: diningPhilosophersAlgo2.o
+	$(CC) $^ -o $@.exe
+
+dp3: diningPhilosophersAlgo3.o
+	$(CC) $^ -o $@.exe
 
 clean:
-	rm *.o *.exe
+	rm -f *.o *.exe
 
 .c.o:
 	$(CC) -c $< -o $@
