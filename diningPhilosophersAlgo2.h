@@ -1,5 +1,5 @@
-#ifndef diningPhilosophersAlgo1
-#define diningPhilosophersAlgo1
+#ifndef diningPhilosophersAlgo2
+#define diningPhilosophersAlgo2
 
 #define TRUE 1
 #define FALSE 0
