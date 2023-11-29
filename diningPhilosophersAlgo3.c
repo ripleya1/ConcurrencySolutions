@@ -3,13 +3,14 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "diningPhilosophersAlgo1.h"
+#include "diningPhilosophersAlgo3.h"
 #include "common.h"
 #include "common_threads.h"
 #include "zemaphore.h" 
 
 int numPhilosophers = 0;
 Zem_t *Fork;
+Zem_t *Phil;
 
 int main(int argc, char *argv[]) {
     if(argc != 2){
@@ -30,12 +31,15 @@ int main(int argc, char *argv[]) {
 
     printf("Dining started\n");
 
+    Phil = malloc(sizeof(Zem_t) * numPhilosophers); // indicates whether or not the philosopher is at the table
+
     // init philosophers
     pthread_t ph[numPhilosophers];
     int i;
     for(i = 0; i < numPhilosophers; i++){
         int p = i;
         Pthread_create(&ph[i], NULL, philosopher, (void *)p);
+        Zem_init(&Phil[i], 1);
     }
 
     for(;;);
