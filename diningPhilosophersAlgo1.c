@@ -52,26 +52,6 @@ int main(int argc, char *argv[]) {
     printf("Dining finished\n");
 }
 
-int left(int p){
-    // printf("l: %d\n", p);
-    return p;
-}
-
-int right(int p){
-    // printf("r: %d\n", p);
-    return (p + 1) % numPhilosophers;
-}
-
-void think(){
-    usleep(10);
-    return;
-}
-
-void eat(){
-    usleep(10);
-    return;
-}
-
 void *philosopher(void *arg){
     int p = (int) arg;
     for(;;){
@@ -95,4 +75,24 @@ void putForks(int p){
     printf("put %d\n", p);
     Zem_post(&Fork[left(p)]);
     Zem_post(&Fork[right(p)]);
+}
+
+int left(int p){
+    // printf("l: %d\n", p);
+    return p;
+}
+
+int right(int p){
+    // printf("r: %d\n", p);
+    return (p + 1) % numPhilosophers;
+}
+
+void think(){
+    usleep(10);
+    return;
+}
+
+void eat(){
+    usleep(10);
+    return;
 }

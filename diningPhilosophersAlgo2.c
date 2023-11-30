@@ -73,7 +73,9 @@ void getForks(int p){
     printf("get %d\n", p);
     int forksAvailable = FALSE;
 
-    // if either fork is being used/looked at, keep checking if they aren't until they're not
+    // if either fork is being used/looked at, 
+    // keep checking if they aren't until they're not,
+    // at which point take forks
     while(!forksAvailable){
         Zem_wait(&LookAtForks);
         forksAvailable = &Fork[left(p)].value != 1 || &Fork[right(p)].value != 1;

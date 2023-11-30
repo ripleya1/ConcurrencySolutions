@@ -17,8 +17,9 @@ When a philosopher is done eating, they get up from the table.
 #include "zemaphore.h" 
 
 int numPhilosophers = 0;
+int numAtTable = 0;
 Zem_t *Fork;
-Zem_t *Phil;
+Zem_t *checkTable;
 
 int main(int argc, char *argv[]) {
     if(argc != 2){
@@ -39,7 +40,10 @@ int main(int argc, char *argv[]) {
 
     printf("Dining started\n");
 
-    Phil = malloc(sizeof(Zem_t) * numPhilosophers); // indicates whether or not the philosopher is at the table
+    // semaphore indicating whether we can safely look at/modify 
+    // the number of philosophers currently at the table (numAtTable)
+    checkTable = malloc(sizeof(Zem_t));
+    Zem_init(&checkTable, 1);
 
     // init philosophers
     pthread_t ph[numPhilosophers];
@@ -47,7 +51,6 @@ int main(int argc, char *argv[]) {
     for(i = 0; i < numPhilosophers; i++){
         int p = i;
         Pthread_create(&ph[i], NULL, philosopher, (void *)p);
-        Zem_init(&Phil[i], 1);
     }
 
     // run forever
@@ -55,6 +58,49 @@ int main(int argc, char *argv[]) {
 
     // this shouldn't print
     printf("Dining finished\n");
+}
+
+void *philosopher(void *arg){
+    int p = (int) arg;
+    for(;;){
+        printf("think %d\n", p);
+        think();
+        getForks(p);
+        printf("eat %d\n", p);
+        eat();
+        putForks(p);
+    }
+    return NULL;
+}
+
+void getForks(int p){
+    int tableFull = TRUE; // more accurately noRoomForOneMore
+
+    // if the table doesn't have room for any more philosophers,
+    // keep checking if it does until it does,
+    // at which point sit down (ie take forks)
+    while(tableFull){
+        Zem_wait(&checkTable);
+        tableFull = numAtTable >= numPhilosophers - 1; // TODO: fix?
+        // Zem_post(&checkTable); 
+        if(!tableFull){
+            numAtTable++;
+            Zem_wait(&Fork[right(p)]);
+            Zem_wait(&Fork[left(p)]);
+        }
+        Zem_post(&checkTable);
+    }
+    printf("get %d\n", p);
+}
+
+void putForks(int p){
+    printf("put %d\n", p);
+    Zem_post(&Fork[right(p)]);
+    Zem_post(&Fork[left(p)]);
+
+    Zem_wait(&checkTable);
+    numAtTable--;
+    Zem_post(&checkTable);
 }
 
 int left(int p){
@@ -75,29 +121,4 @@ void think(){
 void eat(){
     usleep(10);
     return;
-}
-
-void *philosopher(void *arg){
-    int p = (int) arg;
-    for(;;){
-        printf("think %d\n", p);
-        think();
-        getForks(p);
-        printf("eat %d\n", p);
-        eat();
-        putForks(p);
-    }
-    return NULL;
-}
-
-void getForks(int p){
-    printf("get %d\n", p);
-    Zem_wait(&Fork[left(p)]);
-    Zem_wait(&Fork[right(p)]);
-}
-
-void putForks(int p){
-    printf("put %d\n", p);
-    Zem_post(&Fork[left(p)]);
-    Zem_post(&Fork[right(p)]);
 }
