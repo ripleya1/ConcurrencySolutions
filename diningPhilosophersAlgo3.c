@@ -74,33 +74,34 @@ void *philosopher(void *arg){
 }
 
 void getForks(int p){
-    int tableFull = TRUE; // more accurately noRoomForOneMore
+    int roomForOneMore = FALSE;
 
-    // if the table doesn't have room for any more philosophers,
+    // if the table doesn't have room for more philosophers,
     // keep checking if it does until it does,
     // at which point sit down (ie take forks)
-    while(tableFull){
+    while(!roomForOneMore){
         Zem_wait(&checkTable);
-        tableFull = numAtTable >= numPhilosophers - 1; // TODO: fix?
-        // Zem_post(&checkTable); 
-        if(!tableFull){
+        roomForOneMore = numAtTable < numPhilosophers;
+        if(roomForOneMore){
             numAtTable++;
             Zem_wait(&Fork[right(p)]);
             Zem_wait(&Fork[left(p)]);
         }
         Zem_post(&checkTable);
     }
+
     printf("get %d\n", p);
 }
 
 void putForks(int p){
-    printf("put %d\n", p);
     Zem_post(&Fork[right(p)]);
     Zem_post(&Fork[left(p)]);
 
     Zem_wait(&checkTable);
     numAtTable--;
     Zem_post(&checkTable);
+
+    printf("put %d\n", p);
 }
 
 int left(int p){
