@@ -1,3 +1,9 @@
+/*
+Dining Philosophers, Algorithm #2
+A philosopher is allowed to pick up both of her forks together, only if both of them are available. 
+This is similar to the idea Connor suggested about putting a lock around philosophers 0 and 1.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -43,31 +49,11 @@ int main(int argc, char *argv[]) {
         Pthread_create(&ph[i], NULL, philosopher, (void *)p);
     }
 
+    // run forever
     for(;;);
 
+    // this shouldn't print
     printf("Dining finished\n");
-}
-
-int left(int p){
-    // printf("l: %d\n", p);
-    return p;
-}
-
-int right(int p){
-    // printf("r: %d\n", p);
-    return (p + 1) % numPhilosophers;
-}
-
-void think(){
-    // printf("t\n");
-    usleep(10);
-    return;
-}
-
-void eat(){
-    // printf("e\n");
-    usleep(10);
-    return;
 }
 
 void *philosopher(void *arg){
@@ -103,4 +89,24 @@ void putForks(int p){
     printf("put %d\n", p);
     Zem_post(&Fork[left(p)]);
     Zem_post(&Fork[right(p)]);
+}
+
+int left(int p){
+    // printf("l: %d\n", p);
+    return p;
+}
+
+int right(int p){
+    // printf("r: %d\n", p);
+    return (p + 1) % numPhilosophers;
+}
+
+void think(){
+    usleep(10);
+    return;
+}
+
+void eat(){
+    usleep(10);
+    return;
 }

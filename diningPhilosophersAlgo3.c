@@ -1,3 +1,11 @@
+/*
+Dining Philosophers, Algorithm #3
+Each philosopher has their own seat at the table, but they do all of their thinking away from the table.
+When they get hungry, they try to sit at the table, and then picks up their forks (first the right and then the left).
+Allow at most N-1 philosophers to sit at the table simultaneously.
+When a philosopher is done eating, they get up from the table.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -42,8 +50,10 @@ int main(int argc, char *argv[]) {
         Zem_init(&Phil[i], 1);
     }
 
+    // run forever
     for(;;);
 
+    // this shouldn't print
     printf("Dining finished\n");
 }
 
@@ -58,13 +68,11 @@ int right(int p){
 }
 
 void think(){
-    // printf("t\n");
     usleep(10);
     return;
 }
 
 void eat(){
-    // printf("e\n");
     usleep(10);
     return;
 }
@@ -84,15 +92,8 @@ void *philosopher(void *arg){
 
 void getForks(int p){
     printf("get %d\n", p);
-    // if(p == numPhilosophers - 1){
-    //     Zem_wait(&Fork[right(p)]);
-    //     Zem_wait(&Fork[left(p)]);
-    // }
-    // else{
-        Zem_wait(&Fork[left(p)]);
-        // interleaving here
-        Zem_wait(&Fork[right(p)]);
-    // }
+    Zem_wait(&Fork[left(p)]);
+    Zem_wait(&Fork[right(p)]);
 }
 
 void putForks(int p){

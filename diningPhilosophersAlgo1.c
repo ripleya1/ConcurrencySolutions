@@ -1,3 +1,10 @@
+/*
+Dining Philosophers, Algorithm #1
+Each philosopher picks up first their left fork, and then their right fork. 
+As we discussed in class, this can lead to deadlock and starvation. 
+How often does it happen? How long can the simulation run?
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -38,8 +45,10 @@ int main(int argc, char *argv[]) {
         Pthread_create(&ph[i], NULL, philosopher, (void *)p);
     }
 
+    // run forever
     for(;;);
 
+    // this shouldn't print
     printf("Dining finished\n");
 }
 
@@ -54,13 +63,11 @@ int right(int p){
 }
 
 void think(){
-    // printf("t\n");
     usleep(10);
     return;
 }
 
 void eat(){
-    // printf("e\n");
     usleep(10);
     return;
 }
@@ -70,10 +77,6 @@ void *philosopher(void *arg){
     for(;;){
         printf("think %d\n", p);
         think();
-        // algo 2
-        // if(!&Fork[left(p)].value == 1 && !&Fork[right(p)].value == 1)
-        // wait?
-        // effectively do that with a mutex
         getForks(p);
         printf("eat %d\n", p);
         eat();
@@ -84,15 +87,8 @@ void *philosopher(void *arg){
 
 void getForks(int p){
     printf("get %d\n", p);
-    // if(p == numPhilosophers - 1){
-    //     Zem_wait(&Fork[right(p)]);
-    //     Zem_wait(&Fork[left(p)]);
-    // }
-    // else{
-        Zem_wait(&Fork[left(p)]);
-        // interleaving here
-        Zem_wait(&Fork[right(p)]);
-    // }
+    Zem_wait(&Fork[left(p)]);
+    Zem_wait(&Fork[right(p)]);
 }
 
 void putForks(int p){
