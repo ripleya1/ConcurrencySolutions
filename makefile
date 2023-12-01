@@ -11,6 +11,9 @@ dp2: diningPhilosophersAlgo2.o
 dp3: diningPhilosophersAlgo3.o
 	$(CC) $^ -o $@.exe
 
+sh: shuttle.o
+	$(CC) $^ -o $@.exe
+
 clean:
 	rm -f *.o *.exe
 
