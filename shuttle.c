@@ -14,7 +14,7 @@ Hints:
     - You'll probably also need another semaphore so they actually be waiting when the shuttle is not there.
 - One way to think about the shuttle is that it is a semaphore initialized to 30. 
     - Getting on is a wait and getting off is a post.
-- How does the shuttle know to go? (This is a little like the Old Woman, it needs to wait for a post from someone.)
+- How does the shuttle know to go? (it needs to wait for a post from someone.)
 - The shuttle gets to the venue and has to dump the passengers. How is that managed?
 - For ease of implementation, assume the shuttle only picks up attendees at one end of the route, and then heads back.
 */
@@ -31,25 +31,21 @@ Hints:
 
 Zem_t *sh;
 Zem_t *checkAttendees;
+Zem_t *shuttleCanLeave;
 int numAttendees = 0;
 
-/*
-need some sort of boolean indicating that the number of attendees is at 0 so the shuttle can leave
-maybe that being true can trigger a post which triggers the shuttle leaving
-but remember that the shuttle also needs to leave if it's full
-so shuttle_is_full or attendees_at_0 whichever comes first should tell the shuttle to leave
-
-need a "waiting queue" of some kind for attendees so they don't board if they arrived while the shuttle was boarding
-*/
-
 int main(int argc, char *argv[]){
-    // represents the space left on the shuttle
+    // tells us if the shuttle is there
     sh = malloc(sizeof(Zem_t));
     Zem_init(&sh, 1);
 
     // make sure that we can check the attendees variable
     checkAttendees = malloc(sizeof(Zem_t));
     Zem_init(&checkAttendees, 1);
+
+    // tells us if there are attendees waiting for the shuttle
+    shuttleCanLeave = malloc(sizeof(Zem_t));
+    Zem_init(&shuttleCanLeave, 0);
 
     pthread_t s;
     Pthread_create(&s, NULL, shutt, NULL);
@@ -72,17 +68,22 @@ int main(int argc, char *argv[]){
 
 void *shutt(void *arg){
     for(;;){
-        int empty = TRUE;
-        while(empty){
-            Zem_wait(&checkAttendees);
-            empty = numAttendees == 0;
-            Zem_post(&checkAttendees);
-            if(!empty){
-                fillBus();
-                travel();
-                Zem_post(&sh); // shuttle is back and ready
-            }
+        Zem_wait(&sh); 
+        
+        int numOnBus = 0;
+        Zem_wait(&checkAttendees);
+        if(numAttendees < 30){
+            numOnBus = numAttendees;
         }
+        else{
+            numOnBus = 30;
+        }
+        numAttendees -= numOnBus;
+        printf("Bus filled with %d passengers, %d attendees left\n", numOnBus, numAttendees);
+        Zem_post(&checkAttendees);
+
+        travel();
+        Zem_post(&sh); // shuttle is back and ready
     }
 }
 
@@ -91,27 +92,20 @@ void *attendees(void *arg){
         srand(time(NULL));
         usleep(rand() % 20 + 1);
         
-        Zem_wait(&sh); // wait on the shuttle
+        Zem_wait(&sh);
+
         Zem_wait(&checkAttendees);
         if(numAttendees < 30){
             getOn();
+            if(numAttendees == 30){
+                Zem_post(&sh); // shuttle is full
+            }
+            // Zem_post(&checkAttendees);
+            // Zem_wait(&sh) // wait on shuttle to leave
         }
         Zem_post(&checkAttendees);
+        Zem_post(&sh);
     }
-}
-
-void fillBus(){
-    int numOnBus = 0;
-    Zem_wait(&checkAttendees);
-    if(numAttendees < 30){
-        numOnBus = numAttendees;
-    }
-    else{
-        numOnBus = 30;
-    }
-    numAttendees -= numOnBus;
-    printf("Bus filled with %d passengers, %d attendees left\n", numOnBus, numAttendees);
-    Zem_post(&checkAttendees);
 }
 
 void getOn(){
