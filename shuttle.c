@@ -31,8 +31,7 @@ Hints:
 
 Zem_t *sh;
 Zem_t *checkAttendees;
-Zem_t *busStop;
-int attendees = 0;
+int numAttendees = 0;
 
 /*
 need some sort of boolean indicating that the number of attendees is at 0 so the shuttle can leave
@@ -44,49 +43,85 @@ need a "waiting queue" of some kind for attendees so they don't board if they ar
 */
 
 int main(int argc, char *argv[]){
-    // represents the shuttle
+    // represents the space left on the shuttle
     sh = malloc(sizeof(Zem_t));
-    Zem_init(&sh, 30);
+    Zem_init(&sh, 1);
 
     // make sure that we can check the attendees variable
     checkAttendees = malloc(sizeof(Zem_t));
     Zem_init(&checkAttendees, 1);
 
-    // represents the people at the bus stop
-    busStop = malloc(sizeof(Zem_t));
-    Zem_init(&busStop, 0);
-
     pthread_t s;
     Pthread_create(&s, NULL, shutt, NULL);
 
+    pthread_t a[5];
+    // Pthread_create(&a, NULL, attendees, NULL);
+    int i;
+    for(i = 0; i < 5; i++){
+        Pthread_create(&a[i], NULL, attendees, NULL);
+    }
+
     printf("Shuttling started\n");
+
+    // run forever
+    for(;;);
+
+    // this shouldn't print
+    printf("Shuttling finished\n");
 }
 
 void *shutt(void *arg){
     for(;;){
-        fillBus();
+        int empty = TRUE;
+        while(empty){
+            Zem_wait(&checkAttendees);
+            empty = numAttendees == 0;
+            Zem_post(&checkAttendees);
+            if(!empty){
+                fillBus();
+                travel();
+                Zem_post(&sh); // shuttle is back and ready
+            }
+        }
+    }
+}
+
+void *attendees(void *arg){
+    for(;;){
+        srand(time(NULL));
+        usleep(rand() % 20 + 1);
         
+        Zem_wait(&sh); // wait on the shuttle
+        Zem_wait(&checkAttendees);
+        if(numAttendees < 30){
+            getOn();
+        }
+        Zem_post(&checkAttendees);
     }
 }
 
 void fillBus(){
     int numOnBus = 0;
-    while(numOnBus < 30 && ){
-        numOnBus++;
+    Zem_wait(&checkAttendees);
+    if(numAttendees < 30){
+        numOnBus = numAttendees;
     }
+    else{
+        numOnBus = 30;
+    }
+    numAttendees -= numOnBus;
+    printf("Bus filled with %d passengers, %d attendees left\n", numOnBus, numAttendees);
+    Zem_post(&checkAttendees);
 }
 
 void getOn(){
-    Zem_post(&busStop);
-    Zem_wait(&sh);
-}
-
-void getOff(){
-    Zem_wait(&busStop);
-    Zem_post(&sh);
+    numAttendees++;
+    // usleep(2);
+    return;
 }
 
 void travel(){
-    usleep(10);
+    printf("travel\n");
+    usleep(20);
     return;
 }
