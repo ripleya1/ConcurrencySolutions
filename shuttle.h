@@ -7,7 +7,7 @@
 int main(int argc, char *argv[]);
 void *shutt(void *arg);
 void *attendees(void *arg);
-void getOn();
+void fillBus();
 void travel();
 
 #endif
