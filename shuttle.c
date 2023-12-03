@@ -30,7 +30,7 @@ Hints:
 #include "zemaphore.h" 
 
 Zem_t *checkAttendees;
-int numAttendees = 0;
+int numAttendees = 0; // keeps track of the number of attendees waiting for the bus
 
 int main(int argc, char *argv[]){
     // used to ensure that we can check/modify the numAttendees variable
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]){
 void *shutt(void *arg){
     for(;;){
         // if the waiting queue is empty, wait until it isn't 
-        // (ie wait until there's at least one attendee waiting)
+        // (ie wait until there's at least one attendee waiting),
         // then fill the bus and take the attendees
         int empty = TRUE;
         while(empty){
@@ -75,11 +75,11 @@ void *shutt(void *arg){
 
 void *attendees(void *arg){
     for(;;){
-        // wait a random amount of time to add another attendee
+        // wait a random amount of time between 1 and 20 us to add another attendee
         srand(time(NULL));
         usleep(rand() % 20 + 1);
         
-        // add another attendee (they're now waiting)
+        // add another attendee (this means that they're now waiting)
         Zem_wait(&checkAttendees);
         numAttendees++;
         Zem_post(&checkAttendees);
