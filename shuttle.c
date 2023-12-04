@@ -29,6 +29,7 @@ Hints:
 #include "common_threads.h"
 #include "zemaphore.h" 
 
+// maybe have a boolean that says whether the shuttle is there (with a zemaphore for checking that)
 Zem_t *checkAttendees;
 int numAttendees = 0; // keeps track of the number of attendees waiting for the bus
 
@@ -68,6 +69,7 @@ void *shutt(void *arg){
             if(!empty){
                 fillBus();
                 travel();
+                // post(&sh)
             }
         }
     }
@@ -78,6 +80,10 @@ void *attendees(void *arg){
         // wait a random amount of time between 1 and 20 us to add another attendee
         srand(time(NULL));
         usleep(rand() % 20 + 1);
+
+        // wait(&sh)
+        // while(shuttleIsHere)
+        // add to an attendees "queue" (just an int) while the shuttle is there and then add that number to numAttendees when the shuttle leaves
         
         // add another attendee (this means that they're now waiting)
         Zem_wait(&checkAttendees);
