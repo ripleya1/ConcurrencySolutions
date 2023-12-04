@@ -30,13 +30,25 @@ Hints:
 #include "zemaphore.h" 
 
 // maybe have a boolean that says whether the shuttle is there (with a zemaphore for checking that)
+Zem_t *checkShuttle;
+int shuttleThere = FALSE; // keeps track of whether the shuttle is there or not
 Zem_t *checkAttendees;
 int numAttendees = 0; // keeps track of the number of attendees waiting for the bus
+Zem_t *checkAttendeesQueue;
+int attendeesQueue = 0; // keeps track of the number of attendees in the queue while the bus is there
 
 int main(int argc, char *argv[]){
     // used to ensure that we can check/modify the numAttendees variable
     checkAttendees = malloc(sizeof(Zem_t));
     Zem_init(&checkAttendees, 1);
+
+    // used to ensure that we can check/modify the shuttleThere variable
+    checkShuttle = malloc(sizeof(Zem_t));
+    Zem_init(&checkShuttle, 1);
+
+    // used to ensure that we can check/modify the attendeesQueue variable
+    checkAttendeesQueue = malloc(sizeof(Zem_t));
+    Zem_init(&checkAttendeesQueue, 1);
 
     pthread_t s;
     Pthread_create(&s, NULL, shutt, NULL);
@@ -61,17 +73,8 @@ void *shutt(void *arg){
         // if the waiting queue is empty, wait until it isn't 
         // (ie wait until there's at least one attendee waiting),
         // then fill the bus and take the attendees
-        int empty = TRUE;
-        while(empty){
-            Zem_wait(&checkAttendees);
-            empty = numAttendees == 0;
-            Zem_post(&checkAttendees);
-            if(!empty){
-                fillBus();
-                travel();
-                // post(&sh)
-            }
-        }
+        fillBus();
+        travel();
     }
 }
 
@@ -81,14 +84,31 @@ void *attendees(void *arg){
         srand(time(NULL));
         usleep(rand() % 20 + 1);
 
-        // wait(&sh)
-        // while(shuttleIsHere)
-        // add to an attendees "queue" (just an int) while the shuttle is there and then add that number to numAttendees when the shuttle leaves
-        
-        // add another attendee (this means that they're now waiting)
-        Zem_wait(&checkAttendees);
-        numAttendees++;
-        Zem_post(&checkAttendees);
+        Zem_wait(&checkShuttle);
+        // add to an attendees "queue" (just an int) while the shuttle is there
+        if(shuttleThere){
+            Zem_wait(&checkAttendeesQueue);
+            attendeesQueue++;
+            Zem_post(&checkAttendeesQueue);
+        }
+        if(!shuttleThere){
+            Zem_wait(&checkAttendeesQueue);
+            // Zem_wait(&checkAttendees);
+            // add the attendeesQueue to numAttendees when the shuttle leaves
+            if(attendeesQueue > 0){
+                Zem_wait(&checkAttendees);
+                numAttendees += attendeesQueue;
+                Zem_post(&checkAttendees);
+                attendeesQueue = 0;
+            }
+            Zem_post(&checkAttendeesQueue);
+            
+            // add another attendee
+            Zem_wait(&checkAttendees);
+            numAttendees++;
+            Zem_post(&checkAttendees);
+        }
+        Zem_post(&checkShuttle);
     }
 }
 
@@ -111,6 +131,15 @@ void fillBus(){
 
 void travel(){
     printf("travel\n");
+
+    Zem_wait(&checkShuttle);
+    shuttleThere = FALSE;
+    Zem_post(&checkShuttle);
+
     usleep(20);
+
+    Zem_wait(&checkShuttle);
+    shuttleThere = TRUE;
+    Zem_post(&checkShuttle);
     return;
 }
