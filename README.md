@@ -11,7 +11,7 @@ Each algorithm is implemented in separate .c files named `diningPhilosophersAlgo
 
 ### Algorithm Analysis (WIP)
 - [`diningPhilosophersAlgo1.c`](diningPhilosophersAlgo1.c)
-    - This algorithm deadlocks.
+    - This algorithm deadlocks. Parameters don't really matter here. It happens regardless of time, it's just a matter of when.
 - [`diningPhilosophersAlgo2.c`](diningPhilosophersAlgo2.c)
     - This algorithm does not deadlock.
 - [`diningPhilosophersAlgo3.c`](diningPhilosophersAlgo3.c)
