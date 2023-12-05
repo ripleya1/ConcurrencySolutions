@@ -5,6 +5,7 @@ Constraints:
 - When a shuttle arrived, everyone already waiting was allowed to get on the shuttle
 - Atendees must wait for next shuttle if they arrive while shuttle is boarding
 - The shuttles held 30 people, so if there were more people waiting, they would also have to hang out for the next shuttle.
+    - THIS CONSTRAINT NOT FULFILLED IN WORKING VERSION
 - When the allowed attendees were onboard, the shuttle headed off.
 - If a shuttle arrived and no attendees were waiting, the shuttle immediately departed.
 
@@ -31,7 +32,7 @@ Hints:
 
 // maybe have a boolean that says whether the shuttle is there (with a zemaphore for checking that)
 Zem_t *checkShuttle;
-int shuttleThere = FALSE; // keeps track of whether the shuttle is there or not
+int shuttleThere = TRUE; // keeps track of whether the shuttle is there or not
 Zem_t *checkAttendees;
 int numAttendees = 0; // keeps track of the number of attendees waiting for the bus
 Zem_t *checkAttendeesQueue;
@@ -40,22 +41,22 @@ int attendeesQueue = 0; // keeps track of the number of attendees in the queue w
 int main(int argc, char *argv[]){
     // used to ensure that we can check/modify the numAttendees variable
     checkAttendees = malloc(sizeof(Zem_t));
-    Zem_init(&checkAttendees, 1);
+    Zem_init(checkAttendees, 1);
 
     // used to ensure that we can check/modify the shuttleThere variable
     checkShuttle = malloc(sizeof(Zem_t));
-    Zem_init(&checkShuttle, 1);
+    Zem_init(checkShuttle, 1);
 
     // used to ensure that we can check/modify the attendeesQueue variable
     checkAttendeesQueue = malloc(sizeof(Zem_t));
-    Zem_init(&checkAttendeesQueue, 1);
+    Zem_init(checkAttendeesQueue, 1);
 
     pthread_t s;
     Pthread_create(&s, NULL, shutt, NULL);
 
-    pthread_t a[3];
+    pthread_t a[1];
     int i;
-    for(i = 0; i < 3; i++){
+    for(i = 0; i < 1; i++){
         Pthread_create(&a[i], NULL, attendees, NULL);
     }
 
@@ -70,9 +71,6 @@ int main(int argc, char *argv[]){
 
 void *shutt(void *arg){
     for(;;){
-        // if the waiting queue is empty, wait until it isn't 
-        // (ie wait until there's at least one attendee waiting),
-        // then fill the bus and take the attendees
         fillBus();
         travel();
     }
@@ -80,41 +78,44 @@ void *shutt(void *arg){
 
 void *attendees(void *arg){
     for(;;){
-        // wait a random amount of time between 1 and 20 us to add another attendee
+        // wait a random amount of time between 1 and 20 us for another attendee to come
         srand(time(NULL));
-        usleep(rand() % 20 + 1);
+        // usleep(rand() % 10 + 1);
+        usleep(10);
 
-        Zem_wait(&checkShuttle);
+        Zem_wait(checkShuttle); // double locking here
         // add to an attendees "queue" (just an int) while the shuttle is there
         if(shuttleThere){
-            Zem_wait(&checkAttendeesQueue);
+            Zem_post(checkShuttle); // double locking here
+            Zem_wait(checkAttendeesQueue);
+            printf("Added to queue\n");
             attendeesQueue++;
-            Zem_post(&checkAttendeesQueue);
+            Zem_post(checkAttendeesQueue);
         }
-        if(!shuttleThere){
-            Zem_wait(&checkAttendeesQueue);
-            // Zem_wait(&checkAttendees);
+        else{
+            Zem_post(checkShuttle);
+            Zem_wait(checkAttendeesQueue);
             // add the attendeesQueue to numAttendees when the shuttle leaves
             if(attendeesQueue > 0){
-                Zem_wait(&checkAttendees);
+                Zem_wait(checkAttendees);
                 numAttendees += attendeesQueue;
-                Zem_post(&checkAttendees);
+                Zem_post(checkAttendees);
                 attendeesQueue = 0;
             }
-            Zem_post(&checkAttendeesQueue);
+            Zem_post(checkAttendeesQueue);
             
             // add another attendee
-            Zem_wait(&checkAttendees);
+            Zem_wait(checkAttendees);
+            printf("Added attendee\n");
             numAttendees++;
-            Zem_post(&checkAttendees);
+            Zem_post(checkAttendees);
         }
-        Zem_post(&checkShuttle);
     }
 }
 
 void fillBus(){
     int numOnBus = 0;
-    Zem_wait(&checkAttendees);
+    Zem_wait(checkAttendees);
     // if there are less than the max number waiting, let everyone on
     if(numAttendees < 30){
         numOnBus = numAttendees;
@@ -126,20 +127,20 @@ void fillBus(){
     // calculate remaining waiting
     numAttendees -= numOnBus;
     printf("Bus filled with %d passengers, %d attendees left\n", numOnBus, numAttendees);
-    Zem_post(&checkAttendees);
+    Zem_post(checkAttendees);
 }
 
 void travel(){
     printf("travel\n");
 
-    Zem_wait(&checkShuttle);
+    Zem_wait(checkShuttle);
     shuttleThere = FALSE;
-    Zem_post(&checkShuttle);
+    Zem_post(checkShuttle);
 
-    usleep(20);
+    usleep(20000);
 
-    Zem_wait(&checkShuttle);
+    Zem_wait(checkShuttle);
     shuttleThere = TRUE;
-    Zem_post(&checkShuttle);
+    Zem_post(checkShuttle);
     return;
 }
