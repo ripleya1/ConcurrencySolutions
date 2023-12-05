@@ -36,7 +36,7 @@ int shuttleThere = TRUE; // keeps track of whether the shuttle is there or not
 Zem_t *checkAttendees;
 int numAttendees = 0; // keeps track of the number of attendees waiting for the bus
 Zem_t *checkAttendeesQueue;
-int attendeesQueue = 0; // keeps track of the number of attendees in the queue while the bus is there
+int attendeesQueue = 0; // keeps track of the number of attendees that have been added to the queue while the bus is there
 
 int main(int argc, char *argv[]){
     // used to ensure that we can check/modify the numAttendees variable
@@ -54,9 +54,9 @@ int main(int argc, char *argv[]){
     pthread_t s;
     Pthread_create(&s, NULL, shutt, NULL);
 
-    pthread_t a[1];
+    pthread_t a[3];
     int i;
-    for(i = 0; i < 1; i++){
+    for(i = 0; i < 3; i++){
         Pthread_create(&a[i], NULL, attendees, NULL);
     }
 
@@ -78,17 +78,16 @@ void *shutt(void *arg){
 
 void *attendees(void *arg){
     for(;;){
-        // wait a random amount of time between 1 and 20 us for another attendee to come
+        // wait a random amount of time between 1 and 40 us for another attendee to come
         srand(time(NULL));
-        // usleep(rand() % 10 + 1);
-        usleep(10);
+        usleep(rand() % 40 + 1);
 
-        Zem_wait(checkShuttle); // double locking here
-        // add to an attendees "queue" (just an int) while the shuttle is there
+        // add to the queue while the shuttle is there
+        Zem_wait(checkShuttle);
         if(shuttleThere){
-            Zem_post(checkShuttle); // double locking here
+            Zem_post(checkShuttle);
             Zem_wait(checkAttendeesQueue);
-            printf("Added to queue\n");
+            // printf("Added to queue\n");
             attendeesQueue++;
             Zem_post(checkAttendeesQueue);
         }
@@ -100,13 +99,13 @@ void *attendees(void *arg){
                 Zem_wait(checkAttendees);
                 numAttendees += attendeesQueue;
                 Zem_post(checkAttendees);
+                // printf("Queue was: %d\n", attendeesQueue);
                 attendeesQueue = 0;
             }
             Zem_post(checkAttendeesQueue);
             
             // add another attendee
             Zem_wait(checkAttendees);
-            printf("Added attendee\n");
             numAttendees++;
             Zem_post(checkAttendees);
         }
@@ -124,20 +123,20 @@ void fillBus(){
     else{
         numOnBus = 30;
     }
-    // calculate remaining waiting
+    // calculate remaining waiting attendees
     numAttendees -= numOnBus;
     printf("Bus filled with %d passengers, %d attendees left\n", numOnBus, numAttendees);
     Zem_post(checkAttendees);
 }
 
 void travel(){
-    printf("travel\n");
+    // printf("travel\n");
 
     Zem_wait(checkShuttle);
     shuttleThere = FALSE;
     Zem_post(checkShuttle);
 
-    usleep(20000);
+    usleep(4250);
 
     Zem_wait(checkShuttle);
     shuttleThere = TRUE;
