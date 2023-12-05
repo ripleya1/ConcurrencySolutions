@@ -8,6 +8,7 @@ This is similar to the idea Connor suggested about putting a lock around philoso
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "diningPhilosophersAlgo2.h"
 #include "common.h"
@@ -58,12 +59,16 @@ int main(int argc, char *argv[]) {
 
 void *philosopher(void *arg){
     int p = (int) arg;
+    clock_t prevClock, newClock = clock();
     for(;;){
         printf("think %d\n", p);
         think();
         getForks(p);
         printf("eat %d\n", p);
         eat();
+        newClock = clock();
+        printf("Philosopher %d: %d clocks since last eat\n", p, (newClock - prevClock));
+        prevClock = newClock;
         putForks(p);
     }
     return NULL;
