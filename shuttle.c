@@ -5,7 +5,6 @@ Constraints:
 - When a shuttle arrived, everyone already waiting was allowed to get on the shuttle
 - Atendees must wait for next shuttle if they arrive while shuttle is boarding
 - The shuttles held 30 people, so if there were more people waiting, they would also have to hang out for the next shuttle.
-    - THIS CONSTRAINT NOT FULFILLED IN WORKING VERSION
 - When the allowed attendees were onboard, the shuttle headed off.
 - If a shuttle arrived and no attendees were waiting, the shuttle immediately departed.
 
