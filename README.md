@@ -13,9 +13,19 @@ Each algorithm is implemented in separate .c files named `diningPhilosophersAlgo
 - [`diningPhilosophersAlgo1.c`](diningPhilosophersAlgo1.c)
     - This algorithm deadlocks. Parameters don't really matter here. It happens regardless of time, it's just a matter of when.
 - [`diningPhilosophersAlgo2.c`](diningPhilosophersAlgo2.c)
-    - This algorithm does not deadlock.
+    - This algorithm does not deadlock. However, it does starve at times.
 - [`diningPhilosophersAlgo3.c`](diningPhilosophersAlgo3.c)
-    - This algorithm does not deadlock.
+    - This algorithm does not deadlock. ![dp3-5](misc/img/dp3-5.png) 
+
+#### Files
+All of the files used for the algorithm analysis can be found in the [misc](misc/) folder. The outputs that they come from are in the [misc/outputs](misc/outputs/) folder, and their corresponding graphs can be found in the [misc/img](misc/img/) folder. 
+
+#### Methodology
+"Clocks Per Eat" is defined as the number of clocks between each instance of `eat()` being called on an individual thread basis.
+
+For both algorithms, I made sure to test for 4 and 5 philosophers to ensure that parity wasn't having an effect on results.
+
+I calculated the average, median, and standard deviation for each of the samples using Excel. The graphs were also created using Excel. The [Excel file](misc/Graphs.xlsx) is included in the [misc](misc/) folder.
 
 ## Shuttle Problem
 ### A Note
