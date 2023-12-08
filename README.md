@@ -9,7 +9,7 @@ Dining Philosophers accepts one command line argument - the number of philosophe
 ## Dining Philosophers
 Each algorithm is implemented in separate .c files named `diningPhilosophersAlgoN.c` where `N` is the number of the algorithm. Each also has a .h file with the same naming scheme.
 
-### Algorithm Analysis (WIP)
+### Algorithm Analysis
 - [`diningPhilosophersAlgo1.c`](diningPhilosophersAlgo1.c)
     - This algorithm deadlocks. Parameters don't really matter here. It happens regardless of time, it's just a matter of when.
 - [`diningPhilosophersAlgo2.c`](diningPhilosophersAlgo2.c)
@@ -19,10 +19,10 @@ Each algorithm is implemented in separate .c files named `diningPhilosophersAlgo
     - ![dp2-4](misc/img/dp2-4.png) 
     - ![dp2-5](misc/img/dp2-5.png) 
 - [`diningPhilosophersAlgo3.c`](diningPhilosophersAlgo3.c)
-    - This algorithm does not deadlock. However, like algorithm 2, it does starve at times. Similar to algorithm 2, the philosophers are somewhat inconsistently starving. However, it seems as though this is more accentuated with 5 philosophers than with 4 for this algorithm. We can see this by looking at the graphs, and by seeing that the standard deviation of the sample with 5 philosophers (4344) is much higher than with 4 philosophers (2735).
+    - This algorithm does not deadlock. However, like algorithm 2, it does starve at times. Also similar to algorithm 2, the philosophers are somewhat inconsistently starving. However, it seems as though this is more accentuated with 5 philosophers than with 4 for this algorithm. We can see this by looking at the graphs, and by seeing that the standard deviation of the sample with 5 philosophers (4344) is much higher than with 4 philosophers (2735).
     - For some reason, the difference between the total clocks for 4 and 5 philosophers for algorithm 2 (642149 and 746780 respectively) is much smaller than the difference between 4 and 5 philosophers for algorithm 3 (476312 and 756718 respectively).
-        - It seems that there's some sort of parity related inefficiency in the odd case for algorithm 3 (or possibly more accurately an efficiency in the even case) but I can't for the life of me figure out what it could be.
-    - Another interesting tidbit I noticed is that for both algorithms, the medians increase a bit when there are more philosophers. This makes sense because each philosopher would get less CPU time overall when there are more of them.
+        - Maybe there's some sort of parity related inefficiency in the odd case for algorithm 3 (or possibly more accurately an efficiency in the even case) but I can't for the life of me figure out what it could be.
+    - Another interesting statistic I noticed for both algorithms is that the medians increase a bit when there are more philosophers. This makes sense because each philosopher would get less CPU time overall when there are more of them.
         - For algorithm 2, the medians are 5631 and 6357 for 4 and 5 philosophers respectively. For algorithm 3, the medians are 6679.5 and 7553.5 for philosophers 4 and 5 respectively. 
     - ![dp3-4](misc/img/dp3-4.png) 
     - ![dp3-5](misc/img/dp3-5.png) 
